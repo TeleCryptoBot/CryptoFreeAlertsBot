@@ -2,6 +2,7 @@
 
 Crypto Telegram Bot is a smart bot that helps you monitor the prices of various cryptocurrencies, set alerts, and check the trending coins on CoinGecko.
 
+Demo: @CryptoFreeAlertsBot
 ## 🚀 Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -15,7 +16,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1. Clone the repository
 ```shell
-git clone https://github.com/yourusername/crypto-telegram-bot.git
+git clone https://github.com/TeleCryptoBot/CryptoFreeAlertsBot.git crypto-telegram-bot
 cd crypto-telegram-bot
 ```
 2. Create a .env file in the project root and add your Telegram API key:
