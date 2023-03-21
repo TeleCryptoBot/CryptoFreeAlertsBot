@@ -1,0 +1,7 @@
+cachetools
+requests
+python-telegram-bot[job-queue]
+prettytable
+plotly
+redis
+pycoingecko

@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  oasisbot:
+    build: app
+    links:
+      - redis
+    env_file:
+      - .env
+    deploy:
+      restart_policy:
+        condition: on-failure
+  redis:
+    image: redis:alpine3.17
+    volumes:
+      - redis_data:/data
+    deploy:
+      restart_policy:
+        condition: on-failure
+volumes:
+  redis_data: {}
+
