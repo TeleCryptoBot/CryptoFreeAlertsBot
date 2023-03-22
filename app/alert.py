@@ -33,7 +33,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "🤖 I'm CryptoBot! Here are the commands you can use:\n\n"
         "/help - Display this help guide\n"
         "/start - Welcome message and a brief introduction about the bot\n"
-        "/set <coin_id> <price> - Set a price alert for a coin\n"
+        "/set <coin_id_1> <coin_id_2> ... - Set a price alert for a coin\n"
         "/remove <coin_id> - Remove a price alert for a coin\n"
         "/list - List all the current price alerts\n"
         "/p <coin_id_1> <coin_id_2> ... - Check the current price of one or multiple coins\n"
