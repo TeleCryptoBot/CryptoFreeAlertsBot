@@ -39,7 +39,8 @@ async def check_trending(update: Update, context: CallbackContext) -> None:
             rank = "--"
         symbol = coin["item"]["symbol"].upper()
         name = coin["item"]["name"]
-        table.add_row([counter, rank, symbol, name])
+        num = f"#{counter}"
+        table.add_row([num, rank, symbol, name])
         counter += 1
     message = '''Coingecko Trending Search \n
     '''

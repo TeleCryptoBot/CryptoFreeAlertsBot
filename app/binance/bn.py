@@ -275,7 +275,7 @@ async def check_alerts(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(
                     chat_id=user_id,
                     text=(
-                        f"The price of {coin_id} has changed by {percentage_change:.2f}% since you set the alert!\n"
+                        f"The price of <b>{coin_id.upper()}</b> has changed by {percentage_change:.2f}% since you set the alert!\n"
                         f"Current price: {current_price}\n"
                         f"Change in 15 minutes: {price_change_15m:.2f}%\n"
                         f"Change in 4 hours: {price_change_4h:.2f}%\n"
