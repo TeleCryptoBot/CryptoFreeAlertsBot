@@ -140,7 +140,7 @@ async def check_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             price_formatted = "0"
             price_change_formatted = "--"
         else:
-            price_formatted = f"${current_price:,.2f}"
+            price_formatted = f"${current_price:,.4f}"
             price_change_formatted = f"{price_change_percent:+.2f}% ✈️" if price_change_percent > 0 else f"{price_change_percent:.2f}% 🥶"
 
         table.add_row([coin_id.upper(), price_formatted, price_change_formatted])

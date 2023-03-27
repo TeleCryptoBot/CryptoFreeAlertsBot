@@ -1,7 +1,11 @@
 version: "3.8"
 services:
-  oasisbot:
+  cryptobot:
     build: app
+    container_name: cryptobot
+    image: cryptofreealertsbot/alertbot:1.0
+    depends_on:
+      - redis
     links:
       - redis
     env_file:
@@ -18,4 +22,3 @@ services:
         condition: on-failure
 volumes:
   redis_data: {}
-

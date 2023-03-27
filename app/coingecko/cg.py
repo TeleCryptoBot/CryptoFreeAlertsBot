@@ -3,6 +3,10 @@ from telegram import Update
 from telegram.ext import CallbackContext, ContextTypes
 import prettytable as pt
 from cachetools import cached, TTLCache
+from pycoingecko import CoinGeckoAPI
+from tools.utils import format_number
+
+cg = CoinGeckoAPI()
 
 
 @cached(cache=TTLCache(maxsize=100000, ttl=60))
@@ -59,6 +63,7 @@ def get_coin_list():
 
 def get_coin_info(coin_symbol):
     try:
+
         coins = get_coin_list()
 
         coin_id = None
@@ -66,25 +71,15 @@ def get_coin_info(coin_symbol):
             if coin['symbol'].lower() == coin_symbol.lower():
                 coin_id = coin['id']
                 break
-
         if coin_id is None:
             print(f'Error: Coin not found with symbol {coin_symbol}')
             return None
 
-        response = requests.get(f'https://api.coingecko.com/api/v3/coins/{coin_id}')
-        response.raise_for_status()
-        data = response.json()
-        coin_info = {
-            'symbol': data['symbol'].upper(),
-            'name': data['name'],
-            'price_usd': data['market_data']['current_price']['usd'],
-            'price_btc': data['market_data']['current_price']['btc'],
-            'market_cap_rank': data['market_data']['market_cap_rank'],
-            'price_change_24h': data['market_data']['price_change_percentage_24h'],
-        }
-        return coin_info
+        coin_data = cg.get_coin_by_id(id=coin_id, localization=False, tickers=False, market_data=True,
+                                      community_data=False, developer_data=False)
+        return coin_data
     except Exception as e:
-        print(f'Error getting coin info: {e}')
+        print(f"Error getting coin info for '{coin_symbol}': {e}")
         return None
 
 
@@ -103,11 +98,39 @@ async def check_coin_info(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await update.message.reply_text(f"Coin not found with symbol {coin_symbol}.")
         return
 
-    response_text = (
-        f"<b>{coin_info['name']} ({coin_info['symbol']})</b>\n"
-        f"Price: ${coin_info['price_usd']:.2f} | {coin_info['price_btc']:.8f} BTC\n"
-        f"Market Cap Rank: {coin_info['market_cap_rank']}\n"
-        f"Price Change (24h): {coin_info['price_change_24h']:+.2f}%"
+    coin_name = coin_info['name']
+    coin_rank = coin_info['market_cap_rank']
+    current_price = coin_info['market_data']['current_price']['usd']
+    market_cap = coin_info['market_data']['market_cap']['usd']
+    low_24h = coin_info['market_data']['low_24h']['usd']
+    high_24h = coin_info['market_data']['high_24h']['usd']
+    volume_24h = coin_info['market_data']['total_volume']['usd']
+    price_change_24h = coin_info['market_data']['price_change_percentage_24h']
+    price_change_7d = coin_info['market_data']['price_change_percentage_7d']
+    price_change_30d = coin_info['market_data']['price_change_percentage_30d']
+    ath = coin_info['market_data']['ath']['usd']
+    ath_date = coin_info['market_data']['ath_date']['usd']
+    atl = coin_info['market_data']['atl']['usd']
+    atl_date = coin_info['market_data']['atl_date']['usd']
+    ath_change = coin_info['market_data']['ath_change_percentage']['usd']
+    atl_change = coin_info['market_data']['atl_change_percentage']['usd']
+    circulating_supply = coin_info['market_data']['circulating_supply']
+    max_supply = coin_info['market_data']['max_supply']
+
+    output = (
+        f"<p>💰 {coin_name} 💰 #{coin_rank}</p>"
+        f"<ul>"
+        f"<li>Price: {current_price:,.2f} $</li>"
+        f"<li>Mkt Cap: {format_number(market_cap)} $</li>"
+        f"<li>24h: ↑{high_24h:,.2f} $, ↓{low_24h:,.2f} $</li>"
+        f"<li>24h Vol: {format_number(volume_24h)} $</li>"
+        f"<li>24h Chg: {price_change_24h:+.2f}%</li>"
+        f"<li>7d/30d Chg: {price_change_7d:+.2f}% / {price_change_30d:+.2f}%</li>"
+        f"<li>ATH: {ath:,.2f} $ ({ath_date.strftime('%Y-%m-%d')})</li>"
+        f"<li>ATL: {atl:,.6f} $ ({atl_date.strftime('%Y-%m-%d')})</li>"
+        f"<li>ATH/ATL %: ➗{ath_change:.1f} / ❎{atl_change:.1f}</li>"
+        f"<li>Supply: {circulating_supply:,.2f} M / {max_supply:,.2f} M</li>"
+        f"</ul>"
     )
 
-    await update.message.reply_text(response_text, parse_mode="HTML")
+    await update.message.reply_text(f"<pre>{output}</pre>", parse_mode="HTML")
