@@ -3,8 +3,6 @@ import requests
 import prettytable as pt
 import logging
 
-from redis import Redis
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue, MessageHandler, filters, \
@@ -12,13 +10,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQu
 
 from .utils import get_current_price
 
-# Initialize environment variables
-PERCENTAGE_CHANGE = int(os.environ.get("PERCENTAGE_CHANGE", 3))
-REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
-REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
-
-# Initialize Redis client
-redis_client = Redis(host=REDIS_HOST, port=REDIS_PORT)
+from ..alert import redis_client
 
 
 async def list_alerts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

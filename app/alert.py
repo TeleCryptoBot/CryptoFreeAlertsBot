@@ -1,13 +1,14 @@
 import os
 import logging
-import re
+from redis import Redis
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue, MessageHandler, filters, \
     CallbackQueryHandler
 
-from coingecko.cg import check_trending, check_coin_info
-from binance.bn import remove_alert, set_alert, list_alerts, check_price, set_custom_check, check_custom_list, \
+from coingecko_api.cg import check_trending, check_coin_info
+from binance_api.bn import remove_alert, set_alert, list_alerts, check_price, set_custom_check, check_custom_list, \
     refresh_prices_callback, check_alerts, check_value
 
 # Initialize logging
@@ -15,6 +16,13 @@ logging.basicConfig(level=logging.INFO)
 
 # Initialize environment variables
 TELEGRAM_API_KEY = os.environ.get("TELEGRAM_API_KEY")
+
+PERCENTAGE_CHANGE = int(os.environ.get("PERCENTAGE_CHANGE", 3))
+REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
+REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
+
+# Initialize Redis client
+redis_client = Redis(host=REDIS_HOST, port=REDIS_PORT)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -68,8 +76,8 @@ def main():
     app.add_handler(CommandHandler("ppp", check_coin_info))
 
     job_queue.run_repeating(check_alerts, interval=180, first=0)
-    job_queue.start()
 
+    job_queue.start()
     app.run_polling()
 
 

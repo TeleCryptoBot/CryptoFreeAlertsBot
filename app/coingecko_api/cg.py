@@ -7,6 +7,7 @@ import prettytable as pt
 from cachetools import cached, TTLCache
 from pycoingecko import CoinGeckoAPI
 from .utils import format_number
+
 cg = CoinGeckoAPI()
 
 
@@ -59,6 +60,7 @@ def get_coin_list():
     response = requests.get(f'https://api.coingecko.com/api/v3/coins/list')
     response.raise_for_status()
     coins = response.json()
+    redis_client.set(redis_key, json.dumps(coins))
     return coins
 
 
