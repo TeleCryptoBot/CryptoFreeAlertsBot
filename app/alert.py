@@ -1,10 +1,6 @@
 import os
 import logging
-import requests
-import prettytable as pt
-
-from redis import Redis
-
+import re
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue, MessageHandler, filters, \
@@ -12,7 +8,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQu
 
 from coingecko.cg import check_trending, check_coin_info
 from binance.bn import remove_alert, set_alert, list_alerts, check_price, set_custom_check, check_custom_list, \
-    refresh_prices_callback, check_alerts
+    refresh_prices_callback, check_alerts, check_value
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -23,8 +19,12 @@ TELEGRAM_API_KEY = os.environ.get("TELEGRAM_API_KEY")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Welcome to the crypto price alert bot!\n"
-        "Use /set {coin1 coin2 ...} to set alerts for the cryptocurrencies you're interested in."
+        "Welcome to the crypto price alert bot!\n\n"
+        "Some basic commands: \n\n"
+        "/p ada btc bnb - query prices \n"
+        "/value 1 btc - value 1 btc in USDT\n"
+        "/ppp sol - Solana detail\n"
+        "/set {coin1 coin2 ...} to set alerts for the cryptocurrencies you're interested in."
     )
 
 
@@ -39,8 +39,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/p <coin_id_1> <coin_id_2> ... - Check the current price of one or multiple coins\n"
         "/px <name> <coin_id_1> <coin_id_2> ... - Set a custom list with a name to check multiple coin prices\n"
         "/pxc <name> - Check the prices of coins in the custom list by its name\n"
-        "/ppp <coin_symbol> - Check information for a coin on CoinGecko (e.g., BTC, ETH)\n"
+        "/ppp <name> - Check information for a coin on CoinGecko (e.g., BTC, ETH)\n"
         "/trending - Check top 7 trending coins on CoinGecko\n"
+        "/value <amount> <name>"
     )
 
     await update.message.reply_text(help_text)
@@ -55,6 +56,7 @@ def main():
     app.add_handler(CommandHandler("set", set_alert))
     app.add_handler(CommandHandler("list", list_alerts))
     app.add_handler(MessageHandler(filters.Regex(r'^(?:/|)[Pp](?:\s|$)'), check_price))
+    app.add_handler(MessageHandler(filters.Regex(r'^(?:/|)[Vv][Aa][Ll][Uu][Ee](?:\s|$)'), check_value))
 
     app.add_handler(CommandHandler("px", set_custom_check))
     app.add_handler(CommandHandler("pxc", check_custom_list))

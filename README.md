@@ -44,6 +44,7 @@ Now the Crypto Telegram Bot should be running and connected to your Telegram acc
 - `/pxc`: Check the price of a custom list of cryptocurrencies
 - `/trending`: Check the top-7 trending coins on CoinGecko
 - `/ppp`: Check detailed information about a cryptocurrency by its symbol
+- `/value`: Get price in usdt with amount
 
 ## 📄 License
 

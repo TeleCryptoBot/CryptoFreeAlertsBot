@@ -9,6 +9,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Callbac
 
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue, MessageHandler, filters, \
     CallbackQueryHandler
+
+from .utils import get_current_price
+
 # Initialize environment variables
 PERCENTAGE_CHANGE = int(os.environ.get("PERCENTAGE_CHANGE", 3))
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
@@ -41,19 +44,6 @@ async def list_alerts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     await update.message.reply_text(f"Cryptocurrencies you've set alerts for:\n<pre>{table.get_string()}</pre>",
                                     parse_mode="HTML")
-
-
-def get_current_price(coin_id: str):
-    try:
-        url = f"https://api.binance.com/api/v3/ticker/price?symbol={coin_id.upper()}USDT"
-        response = requests.get(url)
-        response.raise_for_status()
-
-        ticker = response.json()
-        return float(ticker["price"])
-    except Exception as e:
-        logging.error(f"Error fetching price for {coin_id}: {e}")
-        return None
 
 
 async def set_alert(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -153,7 +143,8 @@ async def check_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text(f"<pre>{table.get_string()}</pre>", parse_mode="HTML", reply_markup=reply_markup)
+    await update.message.reply_text(f"<pre>{table.get_string()}</pre>", parse_mode="HTML", reply_markup=reply_markup,
+                                    reply_to_message_id=update.message.message_id)
 
 
 async def refresh_prices_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -267,6 +258,11 @@ async def check_alerts(context: ContextTypes.DEFAULT_TYPE):
                 continue
 
             percentage_change = ((current_price - old_price) / old_price) * 100
+            if percentage_change > 0:
+                trend_icon = "📈"
+            else:
+                trend_icon = "📉"
+
             if abs(percentage_change) >= PERCENTAGE_CHANGE:
                 price_change_15m = await get_price_change(coin_id, "15m")
                 price_change_4h = await get_price_change(coin_id, "4h")
@@ -275,11 +271,46 @@ async def check_alerts(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(
                     chat_id=user_id,
                     text=(
-                        f"The price of <b>{coin_id.upper()}</b> has changed by {percentage_change:.2f}% since you set the alert!\n"
+                        f"{trend_icon}. <b>{coin_id.upper()}</b> has changed by {percentage_change:.2f}%!\n"
                         f"Current price: {current_price}\n"
                         f"Change in 15 minutes: {price_change_15m:.2f}%\n"
                         f"Change in 4 hours: {price_change_4h:.2f}%\n"
                         f"Change in 1 day: {price_change_1d:.2f}%"
-                    )
+                    ), parse_mode='HTML'
                 )
                 redis_client.hset(key, coin_id, current_price)
+
+
+# Check Value 10 BTC
+
+async def check_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    message_text = update.message.text.strip().lower()
+    args = message_text.split()[1:]  # Split message into words and ignore the first word (command itself)
+
+    if len(args) < 2:
+        await update.message.reply_text("Please specify at least one cryptocurrency (coin_id).")
+        return
+
+    amount = float(args[0])
+    coin = args[1].lower()
+    if coin == 'btc':
+        btc_price = get_current_price(coin_id=coin)
+        usdt_value = amount * btc_price
+        output = (
+            f"{amount} {coin.upper()} = \n\n"
+            f"💰 {usdt_value:,.2f} USDT"
+        )
+
+    else:
+        usdt_price = get_current_price(coin_id=coin)
+        btc_price = get_current_price(coin_id='btc')
+        usdt_value = amount * usdt_price
+        btc_value = usdt_value / btc_price
+        output = (
+            f"{amount} {coin.upper()} = \n\n"
+            f"💰 {usdt_value:,.2f} USDT\n"
+            f"💰 {btc_value:,.6f} BTC"
+        )
+
+    await update.message.reply_text(f"<pre>{output}</pre>", parse_mode='HTML',
+                                    reply_to_message_id=update.message.message_id)
