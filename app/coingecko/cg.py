@@ -1,5 +1,5 @@
-import sys
-from pathlib import Path
+from datetime import datetime
+
 import requests
 from telegram import Update
 from telegram.ext import CallbackContext, ContextTypes
@@ -110,9 +110,13 @@ async def check_coin_info(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     price_change_7d = coin_info['market_data']['price_change_percentage_7d']
     price_change_30d = coin_info['market_data']['price_change_percentage_30d']
     ath = coin_info['market_data']['ath']['usd']
-    ath_date = coin_info['market_data']['ath_date']['usd']
     atl = coin_info['market_data']['atl']['usd']
-    atl_date = coin_info['market_data']['atl_date']['usd']
+
+    atl_date_str = coin_info['market_data']['atl_date']['usd']
+    atl_date = datetime.strptime(atl_date_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+    ath_date_str = coin_info['market_data']['ath_date']['usd']
+    ath_date = datetime.strptime(ath_date_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+
     ath_change = coin_info['market_data']['ath_change_percentage']['usd']
     atl_change = coin_info['market_data']['atl_change_percentage']['usd']
     circulating_supply = coin_info['market_data']['circulating_supply']
