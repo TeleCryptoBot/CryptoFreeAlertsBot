@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   cryptobot:
-    build: app
+    build: .
     container_name: cryptobot
     image: cryptofreealertsbot/alertbot:1.0
     depends_on:

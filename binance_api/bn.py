@@ -8,9 +8,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Callbac
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue, MessageHandler, filters, \
     CallbackQueryHandler
 
-from .utils import get_current_price
+from utils import get_current_price
 
-from ..alert import redis_client
+from alert import redis_client, PERCENTAGE_CHANGE
 
 
 async def list_alerts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -251,10 +251,11 @@ async def check_alerts(context: ContextTypes.DEFAULT_TYPE):
 
             percentage_change = ((current_price - old_price) / old_price) * 100
             if percentage_change > 0:
-                trend_icon = "📈"
+                trend_icon = "💹"
+                icon = "✅"
             else:
-                trend_icon = "📉"
-
+                trend_icon = "💔"
+                icon = "❌"
             if abs(percentage_change) >= PERCENTAGE_CHANGE:
                 price_change_15m = await get_price_change(coin_id, "15m")
                 price_change_4h = await get_price_change(coin_id, "4h")
@@ -263,7 +264,7 @@ async def check_alerts(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(
                     chat_id=user_id,
                     text=(
-                        f"{trend_icon}. <b>{coin_id.upper()}</b> has changed by {percentage_change:.2f}%!\n"
+                        f"{trend_icon} <b>{coin_id.upper()}</b> has changed by {percentage_change:.2f}%\n"
                         f"Current price: {current_price}\n"
                         f"Change in 15 minutes: {price_change_15m:.2f}%\n"
                         f"Change in 4 hours: {price_change_4h:.2f}%\n"
