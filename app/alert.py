@@ -7,7 +7,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Callbac
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue, MessageHandler, filters, \
     CallbackQueryHandler
 
-from coingecko_api.cg import check_trending, check_coin_info
+# from coingecko_api.cg import check_trending, check_coin_info
 from binance_api.bn import remove_alert, set_alert, list_alerts, check_price, set_custom_check, check_custom_list, \
     refresh_prices_callback, check_alerts, check_value
 
@@ -72,8 +72,8 @@ def main():
     # Add callback handler for the Refresh button
     app.add_handler(CallbackQueryHandler(refresh_prices_callback, pattern="^refresh"))
     # Coingecko Trending
-    app.add_handler(CommandHandler("trending", check_trending))
-    app.add_handler(CommandHandler("ppp", check_coin_info))
+    # app.add_handler(CommandHandler("trending", check_trending))
+    # app.add_handler(CommandHandler("ppp", check_coin_info))
 
     job_queue.run_repeating(check_alerts, interval=180, first=0)
 
