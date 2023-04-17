@@ -8,7 +8,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Callbac
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue, MessageHandler, filters, \
     CallbackQueryHandler
 
-from utils import get_current_price
+from binance_api.utils import get_current_price
 
 from alert import redis_client, PERCENTAGE_CHANGE
 
