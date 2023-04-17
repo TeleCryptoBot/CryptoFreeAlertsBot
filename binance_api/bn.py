@@ -10,7 +10,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQu
 
 from binance_api.utils import get_current_price
 
-from alert import redis_client, PERCENTAGE_CHANGE
+from tools.init import redis_client, PERCENTAGE_CHANGE
 
 
 async def list_alerts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
